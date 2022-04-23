@@ -7,33 +7,10 @@ class CounterPage extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    ref.listen<int>(counterProvider, (previous, next) {
-      if (next >= 5) {
-        showDialog(
-          context: context,
-          builder: (context) => AlertDialog(
-            title: const Text("Dangerous"),
-            actions: [
-              TextButton(
-                onPressed: () => Navigator.pop(context),
-                child: const Text("Ok"),
-              )
-            ],
-          ),
-        );
-      }
-    });
+    final counter = ref.watch(counterProvider);
     return Scaffold(
       appBar: AppBar(
         title: const Text("Counter Page"),
-        actions: [
-          IconButton(
-            onPressed: () {
-              ref.invalidate(counterProvider);
-            },
-            icon: const Icon(Icons.refresh),
-          )
-        ],
       ),
       body: Center(
         child: Column(
@@ -41,18 +18,17 @@ class CounterPage extends ConsumerWidget {
           children: <Widget>[
             const Text('You have pushed the button this many times:'),
             Text(
-              ref.watch(counterProvider).toString(),
+              counter
+                  .when(
+                    data: (int val) => val,
+                    error: (e, _) => e,
+                    loading: () => "Loading",
+                  )
+                  .toString(),
               style: Theme.of(context).textTheme.displayMedium,
             ),
           ],
         ),
-      ),
-      floatingActionButton: FloatingActionButton(
-        onPressed: () {
-          ref.read(counterProvider.notifier).state += 1;
-        },
-        tooltip: 'Increment',
-        child: const Icon(Icons.add),
       ),
     );
   }

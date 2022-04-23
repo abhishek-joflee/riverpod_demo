@@ -3,7 +3,27 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import 'home_page.dart';
 
-final counterProvider = StateProvider((ref) => 0);
+abstract class WebSocket {
+  Stream<int> getCounterStream();
+}
+
+class FakeWebSocket implements WebSocket {
+  @override
+  Stream<int> getCounterStream() async* {
+    int i = 0;
+    while (true) {
+      await Future.delayed(const Duration(milliseconds: 500));
+      yield i++;
+    }
+  }
+}
+
+final webSocketProvider = Provider((ref) => FakeWebSocket());
+
+final counterProvider = StreamProvider<int>((ref) {
+  final ws = ref.watch(webSocketProvider);
+  return ws.getCounterStream();
+});
 void main() {
   runApp(const ProviderScope(child: MyApp()));
 }
