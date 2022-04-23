@@ -4,13 +4,13 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'home_page.dart';
 
 abstract class WebSocket {
-  Stream<int> getCounterStream();
+  Stream<int> getCounterStream(int stream);
 }
 
 class FakeWebSocket implements WebSocket {
   @override
-  Stream<int> getCounterStream() async* {
-    int i = 0;
+  Stream<int> getCounterStream(int start) async* {
+    int i = start;
     while (true) {
       await Future.delayed(const Duration(milliseconds: 500));
       yield i++;
@@ -20,9 +20,9 @@ class FakeWebSocket implements WebSocket {
 
 final webSocketProvider = Provider((ref) => FakeWebSocket());
 
-final counterProvider = StreamProvider<int>((ref) {
+final counterProvider = StreamProvider.family<int, int>((ref, start) {
   final ws = ref.watch(webSocketProvider);
-  return ws.getCounterStream();
+  return ws.getCounterStream(start);
 });
 void main() {
   runApp(const ProviderScope(child: MyApp()));
